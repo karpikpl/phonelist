@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using KattisSolution.IO;
 
@@ -35,50 +36,55 @@ namespace KattisSolution
         private static string Solve(IScanner scanner)
         {
             int numberOfPhoneNumbers = scanner.NextInt();
-            PhoneBook.Node phoneBook = new PhoneBook.Node(String.Empty);
+            Program.PhoneNode phoneBook = new Program.PhoneNode(String.Empty, false);
             string answer = null;
 
             for (int j = 0; j < numberOfPhoneNumbers; j++)
             {
                 var no = scanner.Next();
+                Debug.WriteLine("Processing: " + no);
+
                 if (answer != null)
                     continue;
 
                 var current = phoneBook;
-                var lastDigit = no[no.Length - 1];
-                foreach (var digit in no)
+
+                for (int index = 0; index < no.Length; index++)
                 {
-                    if (current.Nodes[digit - '0'] == null)
-                        current.Nodes[digit - '0'] = new PhoneBook.Node(current.id + digit);
-                    else if (digit == lastDigit)
+                    var digit = no[index] - '0';
+                    if (current.Nodes[digit] == null)
+                        current.Nodes[digit] = new PhoneNode(current.Id + digit, index == no.Length - 1);
+                    else if (index == no.Length - 1 || current.Nodes[digit].IsStop)
                     {
+                        // if this is my last digit and number already used - 'NO'
+                        // if some other number finished here - 'NO'
+
                         // number already exists
                         answer = "NO";
                         break;
                     }
-                    current = current.Nodes[digit - '0'];
+                    current = current.Nodes[digit];
                 }
             }
             return answer ?? "YES";
         }
 
-        public class PhoneBook
+        public class PhoneNode
         {
-            public class Node
+            public override string ToString()
             {
-                public override string ToString()
-                {
-                    return id;
-                }
-
-                public Node(String id)
-                {
-                    this.id = id;
-                }
-
-                public string id;
-                public Node[] Nodes = new Node[10];
+                return Id;
             }
+
+            public PhoneNode(string id, bool isStop)
+            {
+                Id = id;
+                IsStop = isStop;
+            }
+
+            public string Id;
+            public PhoneNode[] Nodes = new PhoneNode[10];
+            public bool IsStop;
         }
     }
 }
